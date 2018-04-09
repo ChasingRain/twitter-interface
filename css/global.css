@@ -2233,7 +2233,6 @@ a:hover .app--avatar {
 /* line 89, ../sass/global.sass */
 .app--avatar img {
   width: 100%;
-  display: none;
 }
 /* line 93, ../sass/global.sass */
 .app--tweet {
