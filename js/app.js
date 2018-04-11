@@ -49,7 +49,7 @@ function getUserData(){
     userScreenName = data.screen_name;
     userPImage = data.profile_image_url;
     userName = data.name
-    user.userBGImage = data.profile_background_image_url;
+    user.userBGImage = data.profile_banner_url;
     user.userName = data.name;
     user.userScreenName = data.screen_name;
     user.userPImage = data.profile_image_url;
@@ -62,10 +62,11 @@ function getFollowers(){
   followers = [];
   T.get('followers/ids', { screen_name: userScreenName },  function (err, data, response) {
     let followerArray = data.ids;
-    let count = 0
-    for(i=0;i<=5;i++){
+    let total = 5;
+    for(i=0;i<=total;i++){
       T.get('users/show', { user_id: followerArray[i] },  function (err, data, response) {
         if(data.errors >= ""){
+          total++;
         }else{
           let follower = {}
           let followerData = data;
@@ -81,7 +82,7 @@ function getFollowers(){
 }
 
 function getTweets(){
-  T.get('statuses/user_timeline', { screen_name: 'chasenbls', count: 5 },  function (err, data, response) {
+  T.get('statuses/user_timeline', { screen_name: userScreenName, count: 5 },  function (err, data, response) {
     tweets = data;
   })
 }
@@ -95,7 +96,6 @@ function getDMS(){
 getData();
 
 app.get('/', (req,res) => {
-  console.log(req.message)
   res.render('index', {
     users: users,
     tweets: tweets,
@@ -105,11 +105,11 @@ app.get('/', (req,res) => {
 })
 
 app.post('*', (req,res) => {
-  T.post('statuses/update', { status: req.body.tweet }, function(err, data, response) {
+  T.post('statuses/update', { status: req.body.tweet }, function(err, data, res) {
   });
   tweets.unshift({
     user: {
-      name: 'test',
+      name: userName,
       screen_name: userScreenName,
       profile_image_url: userPImage
     },

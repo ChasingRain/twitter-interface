@@ -5,7 +5,8 @@ html(lang='en')
     link(rel='stylesheet', href='./css/global.css')
   body
     for user in users
-      header.circle--header(style='background-image: url(#{user.userBGImage})')
+      - var backgroundURL = user.userBGImage
+      header.circle--header(style=`background-image: url(${backgroundURL})`)
         .bounds
           .circle--fluid
             .circle--fluid--cell
@@ -50,7 +51,7 @@ html(lang='en')
           ul.app--tweet--list
             for tweet in tweets
               li
-                strong.app--tweet--timestamp 4h
+                strong.app--tweet--timestamp
                 a.app--tweet--author
                   .app--avatar
                     img(src=tweet.user.profile_image_url)
