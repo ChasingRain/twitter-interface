@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 //app.use(multer()); // for parsing multipart/form-data
+
 app.set('view engine', 'pug');
 
 let followers=[];
@@ -58,26 +59,45 @@ function getUserData(){
   )
 }
 
+let count = 0;
+let followerArray;
+function runAgain(i){
+  followerData(i);
+};
+
+function followerData(i){
+  T.get('users/show', { user_id: followerArray[i] },  function (err, data, response) {
+    if(data.errors >= ""){
+      console.log("error")
+      i++;
+      runAgain(i);
+    }else{
+      let follower = {}
+      let followerData = data;
+      follower.name = followerData.name;
+      follower.screenName = '@'+followerData.screen_name;
+      follower.pImage = followerData.profile_image_url;
+      followers.push(follower);
+      count++;
+      i++;
+      console.log(i)
+      console.log(count)
+      if(count<=4){
+        runAgain(i);
+      }else {
+        return;
+      }
+    }
+  });
+}
+
 function getFollowers(){
   followers = [];
   T.get('followers/ids', { screen_name: userScreenName },  function (err, data, response) {
-    let followerArray = data.ids;
-    let total = 5;
-    for(i=0;i<=total;i++){
-      T.get('users/show', { user_id: followerArray[i] },  function (err, data, response) {
-        if(data.errors >= ""){
-          total++;
-        }else{
-          let follower = {}
-          let followerData = data;
-          follower.name = followerData.name;
-          follower.screenName = '@'+followerData.screen_name;
-          follower.pImage = followerData.profile_image_url;
-          //follower.push(name, screenName, pImage)
-          followers.push(follower);
-        }
-      });
-    }
+    followerArray = data.ids;
+    // for(i=0;i<=5;i++){
+    followerData(0);
+    // }
   })
 }
 
@@ -95,7 +115,7 @@ function getDMS(){
 
 getData();
 
-app.get('/', (req,res) => {
+app.get('/', (req,res,next) => {
   res.render('index', {
     users: users,
     tweets: tweets,
@@ -122,6 +142,19 @@ app.post('*', (req,res) => {
     directMessages: dms,
   });
 })
+
+app.use((req, res, next) => {
+  const err = new Error("Uh Oh, Not Found");
+  err.status= 404;
+  next(err);
+})
+
+app.use((err, req, res, next) => {
+  res.locals.error = err;
+  err.text = 'Looks like there has been an error!';
+  res.status(err.status)
+  res.render('error',err);
+});
 
 app.listen(3000, function () {
 console.log("express has started on port 3000");

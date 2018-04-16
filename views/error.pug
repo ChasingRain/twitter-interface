@@ -1,0 +1,10 @@
+doctype html
+html(lang='en')
+  head
+    link(href='https://fonts.googleapis.com/css?family=Work+Sans:400,600', rel='stylesheet', type='text/css')
+    link(rel='stylesheet', href='./css/global.css')
+  body
+    block content
+      h1= error.text
+      h2= error.message
+      p= error.status
