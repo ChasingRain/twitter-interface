@@ -25,26 +25,19 @@ let users=[];
 let userScreenName="";
 let userPImage="";
 let userBGImage="";
+let count = 0;
+let followerArray;
+let dataComplete = false;
 
 function resetVariables(){
   followers=[];
   tweets=[];
   dms=[];
   users=[];
-  userName = "";
-  userScreenName="";
-  userPImage="";
 }
 
-function getData(){
-  getUserData();
-  getFollowers();
-  getTweets();
-  getDMS();
-}
-
-function getUserData(){
-  users = [];
+function getUserData(res){
+  resetVariables();
   T.get('account/verify_credentials',  function (err, data, response) {
     let user = {};
     userScreenName = data.screen_name;
@@ -55,12 +48,15 @@ function getUserData(){
     user.userScreenName = data.screen_name;
     user.userPImage = data.profile_image_url;
     users.push(user);
+    getFollowers();
+    getTweets();
+    getDMS();
     }
   )
 }
 
-let count = 0;
-let followerArray;
+
+
 function runAgain(i){
   followerData(i);
 };
@@ -80,8 +76,6 @@ function followerData(i){
       followers.push(follower);
       count++;
       i++;
-      console.log(i)
-      console.log(count)
       if(count<=4){
         runAgain(i);
       }else {
@@ -95,33 +89,38 @@ function getFollowers(){
   followers = [];
   T.get('followers/ids', { screen_name: userScreenName },  function (err, data, response) {
     followerArray = data.ids;
-    // for(i=0;i<=5;i++){
     followerData(0);
-    // }
   })
 }
 
 function getTweets(){
+  tweets=[];
   T.get('statuses/user_timeline', { screen_name: userScreenName, count: 5 },  function (err, data, response) {
-    tweets = data;
+    tweets = data
   })
 }
 
 function getDMS(){
+  dms = [];
   T.get('direct_messages', { count: 5 },  function (err, data, response) {
     dms = data;
   })
 }
 
-getData();
 
-app.get('/', (req,res,next) => {
+function render(res){
   res.render('index', {
     users: users,
     tweets: tweets,
     followers: followers,
     directMessages: dms,
   });
+}
+
+getUserData();
+
+app.get('/', (req,res,next) => {
+  render(res)
 })
 
 app.post('*', (req,res) => {
